@@ -369,74 +369,233 @@
 
                     <label class="checkbox-label">
                         <input id="estimateTaxBenefit" type="checkbox">
-                        <span>Estimate incremental federal homeowner tax benefit</span>
+                        <span>Estimate incremental homeowner tax benefit</span>
                     </label>
 
                     <div id="taxInputs" class="nested-inputs" hidden>
                         <p class="inline-warning">
-                            This is a simplified federal estimator, not tax advice. A deduction does not reimburse
-                            mortgage interest. It reduces taxable income, and only the buyer's deduction above the
-                            renter's deduction creates an incremental tax benefit.
+                            A tax deduction does not reimburse mortgage interest or property tax dollar-for-dollar.
+                            It reduces taxable income. The model compares what you would deduct as a renter with what
+                            you would deduct as an owner, then estimates the tax savings from the difference.
                         </p>
+
+                        <label>
+                            <span>Tax model</span>
+                            <select id="taxMode">
+                                <option value="generic">Generic — federal only</option>
+                                <option value="california" selected>California — federal + California</option>
+                            </select>
+                            <small>Choose California to model the state's separate $1M mortgage-interest debt limit and California itemized deductions instead of using a manual state adjustment.</small>
+                        </label>
 
                         <div class="tax-formula" aria-label="Tax estimate formula">
                             <strong>Estimated benefit</strong>
-                            <span>(Buyer deduction − renter deduction) × federal marginal tax rate</span>
+                            <span>Federal incremental savings + California incremental savings (when enabled) + manual adjustment</span>
                         </div>
 
-                        <label>
-                            <span>Federal marginal tax rate</span>
-                            <span class="input-with-unit">
-                                <input id="federalMarginalTaxRate" type="number" min="0" step="0.1" value="32">
-                                <span>%</span>
-                            </span>
-                            <small>Use the rate applying to the income reduced by the deduction, not your effective tax rate.</small>
-                        </label>
+                        <details class="tax-input-guidance" open>
+                            <summary>How to choose these tax inputs</summary>
+                            <div class="tax-guidance-body">
+                                <p class="tax-guidance-intro">
+                                    Use your latest tax return as the baseline. The federal defaults are planning values
+                                    for tax year 2026. California values use the latest published 2025 state figures and
+                                    should be updated when newer state forms are available.
+                                </p>
 
-                        <label>
-                            <span>Standard deduction</span>
-                            <span class="input-with-unit">
-                                <span>$</span>
-                                <input id="standardDeduction" type="number" min="0" step="100" value="32200">
-                            </span>
-                            <small>2026 married-filing-jointly default: $32,200.</small>
-                        </label>
+                                <div class="tax-scenario-guide" aria-label="Suggested tax estimate scenarios">
+                                    <article>
+                                        <strong>Conservative</strong>
+                                        <span>Turn the estimator off. This assumes no ownership-related tax savings.</span>
+                                    </article>
+                                    <article>
+                                        <strong>Generic</strong>
+                                        <span>Use federal only when the state is unknown or you want a portable baseline.</span>
+                                    </article>
+                                    <article>
+                                        <strong>California</strong>
+                                        <span>Use federal + CA when the home and tax residency are in California.</span>
+                                    </article>
+                                </div>
 
-                        <label>
-                            <span>Mortgage-interest debt limit</span>
-                            <span class="input-with-unit">
-                                <span>$</span>
-                                <input id="mortgageInterestDeductionLimit" type="number" min="0" step="10000" value="750000">
-                            </span>
-                            <small>Usually $750,000 for qualifying acquisition debt incurred after December 15, 2017.</small>
-                        </label>
+                                <div class="tax-field-guide table-scroll">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Input</th>
+                                                <th>What to enter</th>
+                                                <th>Your current starting point</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Federal marginal rate</td>
+                                                <td>The rate applying to the last dollars of taxable income, not your effective tax rate.</td>
+                                                <td>32% based on your latest taxable income.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Federal SALT baseline</td>
+                                                <td>State/local taxes you already pay while renting. Exclude the prospective home's property tax.</td>
+                                                <td>$41,094 from your latest Schedule A.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Other federal itemized deductions</td>
+                                                <td>Deductions that remain in both scenarios, excluding mortgage interest and the prospective property tax.</td>
+                                                <td>$0 for 2026 if the only contribution remains $785; the new federal 0.5%-of-AGI charitable floor would eliminate it at your income.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>CA marginal rate</td>
+                                                <td>Your California marginal income-tax rate.</td>
+                                                <td>9.3% based on your latest CA taxable income.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>CA other itemized deductions</td>
+                                                <td>California-allowed deductions present in both scenarios. Do not include CA income tax because California does not allow a deduction for its own income tax.</td>
+                                                <td>$1,676 = $891 personal-property tax + $785 charity.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Manual additional benefit</td>
+                                                <td>Only a separate incremental amount from tax software or a professional that is not already modeled.</td>
+                                                <td>$0 to avoid double counting.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                        <label>
-                            <span>Effective SALT deduction cap</span>
-                            <span class="input-with-unit">
-                                <span>$</span>
-                                <input id="saltCap" type="number" min="0" step="100" value="40400">
-                            </span>
-                            <small>2026 joint-filer maximum: $40,400. Reduce it when MAGI exceeds $505,000; the floor is $10,000.</small>
-                        </label>
+                                <p class="tax-guidance-footnote">
+                                    The California estimator is intentionally simplified. If your California AGI rises
+                                    above the itemized-deduction limitation threshold, use tax software for a final number.
+                                    The app will warn you when the entered AGI is above that threshold.
+                                </p>
+                            </div>
+                        </details>
 
-                        <label>
-                            <span>Other annual state/local taxes — renter baseline</span>
-                            <span class="input-with-unit">
-                                <span>$</span>
-                                <input id="annualOtherStateLocalTaxes" type="number" min="0" step="500" value="0">
-                            </span>
-                            <small>Enter California income tax and other deductible SALT already paid in either scenario. Do not add the prospective home's property tax here.</small>
-                        </label>
+                        <section class="tax-subsection" aria-labelledby="federalTaxHeading">
+                            <div class="subsection-heading">
+                                <h4 id="federalTaxHeading">Federal</h4>
+                                <span class="optional-label">all tax modes</span>
+                            </div>
 
-                        <label>
-                            <span>Other annual itemized deductions — both scenarios</span>
-                            <span class="input-with-unit">
-                                <span>$</span>
-                                <input id="annualOtherItemizedDeductions" type="number" min="0" step="500" value="0">
-                            </span>
-                            <small>For example, qualifying charitable gifts or medical deductions that apply whether renting or buying.</small>
-                        </label>
+                            <label>
+                                <span>Federal marginal tax rate</span>
+                                <span class="input-with-unit">
+                                    <input id="federalMarginalTaxRate" type="number" min="0" step="0.1" value="32">
+                                    <span>%</span>
+                                </span>
+                                <small>Your 2025 federal taxable income was $454,151, so 32% is a reasonable current planning rate.</small>
+                            </label>
+
+                            <label>
+                                <span>Federal standard deduction</span>
+                                <span class="input-with-unit">
+                                    <span>$</span>
+                                    <input id="standardDeduction" type="number" min="0" step="100" value="32200">
+                                </span>
+                                <small>2026 married-filing-jointly planning value: $32,200.</small>
+                            </label>
+
+                            <label>
+                                <span>Federal mortgage-interest debt limit</span>
+                                <span class="input-with-unit">
+                                    <span>$</span>
+                                    <input id="mortgageInterestDeductionLimit" type="number" min="0" step="10000" value="750000">
+                                </span>
+                                <small>Use $750,000 for most new qualifying acquisition mortgages.</small>
+                            </label>
+
+                            <label>
+                                <span>Effective federal SALT deduction cap</span>
+                                <span class="input-with-unit">
+                                    <span>$</span>
+                                    <input id="saltCap" type="number" min="0" step="100" value="40400">
+                                </span>
+                                <small>2026 MFJ maximum planning value: $40,400. Use a lower effective cap if the income-based phase-down applies.</small>
+                            </label>
+
+                            <label>
+                                <span>Other annual state/local taxes — renter baseline</span>
+                                <span class="input-with-unit">
+                                    <span>$</span>
+                                    <input id="annualOtherStateLocalTaxes" type="number" min="0" step="100" value="41094">
+                                </span>
+                                <small>Prefilled from your latest Schedule A: $40,203 state/local income tax + $891 personal-property tax. Exclude the new home's property tax.</small>
+                            </label>
+
+                            <label>
+                                <span>Other annual federal itemized deductions — both scenarios</span>
+                                <span class="input-with-unit">
+                                    <span>$</span>
+                                    <input id="annualOtherItemizedDeductions" type="number" min="0" step="100" value="0">
+                                </span>
+                                <small>Enter the amount deductible under the current federal rules. Your 2025 charity amount was $785, but for 2026 the federal charitable deduction generally applies only above a 0.5%-of-AGI floor, so $0 is the safer default at your current income.</small>
+                            </label>
+                        </section>
+
+                        <section id="californiaTaxInputs" class="tax-subsection" aria-labelledby="californiaTaxHeading">
+                            <div class="subsection-heading">
+                                <h4 id="californiaTaxHeading">California</h4>
+                                <span class="optional-label">California mode only</span>
+                            </div>
+
+                            <p class="tax-section-note">
+                                California does not use the federal SALT cap in the same way. The state calculation below
+                                includes the prospective real-property tax and uses California's larger mortgage-interest
+                                acquisition-debt limit, while excluding California income tax from CA itemized deductions.
+                            </p>
+
+                            <label>
+                                <span>California marginal tax rate</span>
+                                <span class="input-with-unit">
+                                    <input id="californiaMarginalTaxRate" type="number" min="0" step="0.1" value="9.3">
+                                    <span>%</span>
+                                </span>
+                                <small>Your latest California taxable income was $470,960, making 9.3% a reasonable planning rate.</small>
+                            </label>
+
+                            <label>
+                                <span>California standard deduction</span>
+                                <span class="input-with-unit">
+                                    <span>$</span>
+                                    <input id="californiaStandardDeduction" type="number" min="0" step="100" value="11412">
+                                </span>
+                                <small>Latest published 2025 MFJ value: $11,412. Update when the tax year changes.</small>
+                            </label>
+
+                            <label>
+                                <span>California mortgage-interest debt limit</span>
+                                <span class="input-with-unit">
+                                    <span>$</span>
+                                    <input id="californiaMortgageInterestDeductionLimit" type="number" min="0" step="10000" value="1000000">
+                                </span>
+                                <small>California currently allows home-acquisition mortgage interest using a $1,000,000 debt limit rather than the federal $750,000 limit.</small>
+                            </label>
+
+                            <label>
+                                <span>Other annual California itemized deductions — both scenarios</span>
+                                <span class="input-with-unit">
+                                    <span>$</span>
+                                    <input id="californiaOtherItemizedDeductions" type="number" min="0" step="100" value="1676">
+                                </span>
+                                <small>Prefilled from your return: $891 personal-property tax + $785 charity. Do not include California income tax here.</small>
+                            </label>
+
+                            <label>
+                                <span>California AGI</span>
+                                <span class="input-with-unit">
+                                    <span>$</span>
+                                    <input id="californiaAgi" type="number" min="0" step="1000" value="482372">
+                                </span>
+                                <small>Used only to warn when California's high-income itemized-deduction limitation may apply.</small>
+                            </label>
+
+                            <label>
+                                <span>CA itemized-deduction limitation threshold</span>
+                                <span class="input-with-unit">
+                                    <span>$</span>
+                                    <input id="californiaItemizedDeductionLimitThreshold" type="number" min="0" step="1000" value="504411">
+                                </span>
+                                <small>Latest published 2025 MFJ threshold: $504,411. The simplified model warns above this amount rather than estimating the limitation.</small>
+                            </label>
+                        </section>
                     </div>
 
                     <label>
@@ -445,7 +604,7 @@
                             <span>$</span>
                             <input id="additionalAnnualHomeownerTaxBenefit" type="number" step="500" value="0">
                         </span>
-                        <small>Leave at $0 unless tax software or a tax professional gives you an additional annual benefit, such as a California-specific estimate.</small>
+                        <small>Recommended default: $0. Use only for a separate incremental benefit not already included in the selected tax model.</small>
                     </label>
                 </fieldset>
             </section>
@@ -488,7 +647,7 @@
                 </div>
                 <div id="taxEstimateTable" class="table-scroll"></div>
                 <div class="tax-estimate-notes">
-                    <p><strong>Important:</strong> This is tax savings, not recovered interest. Mortgage principal, homeowners insurance, maintenance, and HOA are not included as federal homeowner deductions.</p>
+                    <p><strong>Important:</strong> This is tax savings, not recovered interest. Mortgage principal, homeowners insurance, maintenance, and HOA are not treated as homeowner itemized deductions in this simplified federal/California model.</p>
                     <p>The model credits the estimated benefit to the buyer portfolio at each year-end. It reduces net housing cost, unrecoverable cost, and the economic ownership premium, but it does not reduce gross mortgage or housing cash outflow.</p>
                     <p>The entered tax rules are reused for every simulated year. Revisit them when tax law changes, especially for long holding periods.</p>
                 </div>

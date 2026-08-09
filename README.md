@@ -19,7 +19,7 @@ This version replaces the original annual model with a monthly simulation and ma
 - Uses an annual insurance quote instead of a percentage of home value.
 - Adds maintenance/capital-reserve growth, HOA growth, PMI, ADU income, renter insurance, and moving costs.
 - Calculates buyer net worth net of the remaining mortgage, selling costs, and optional gain tax.
-- Includes a simplified optional federal tax-benefit estimate with a visible year-one calculation bridge.
+- Includes an optional tax model with **Generic federal** and **California (federal + CA)** modes, plus a visible year-one calculation bridge.
 - Adds emergency-fund checks, negative-cash-flow warnings, and a lifestyle ownership-premium input.
 - Adds a year-one monthly expense overview with rent, principal, interest, tax, insurance, maintenance, HOA, PMI, and totals.
 - Adds 5/10/15/etc. holding-period support, break-even year, break-even appreciation, and a 3×3 sensitivity matrix.
@@ -88,57 +88,21 @@ Enter **net** income after vacancy, utilities, maintenance, management, and taxe
 
 ### Tax benefit
 
-The estimate is tax savings, not reimbursement of mortgage interest. The dashboard shows the full year-one bridge:
+The estimate is tax savings, not reimbursement of mortgage interest. Choose **Generic — federal only** for a portable baseline or **California — federal + California** for a state-specific estimate.
 
-1. Mortgage interest paid and the average mortgage balance.
-2. The deductible share of interest under the entered debt limit.
-3. Renter and buyer SALT deductions after the entered cap.
-4. Renter and buyer itemized deductions compared with the standard deduction.
-5. The incremental buyer deduction multiplied by the entered federal marginal rate.
-6. Any manual additional benefit and the monthly equivalent used by the model.
+The federal bridge compares renter and buyer itemized deductions after the federal SALT cap and the mortgage-interest debt limit. California mode adds a separate state calculation using California-allowed property-tax deductions and the state's $1,000,000 acquisition-debt limit for mortgage interest.
 
-The model credits the benefit to the buyer portfolio at each year-end. It reduces buyer unrecoverable costs and the economic ownership premium, but it does not reduce gross mortgage or housing cash outflow.
+For the current personal planning defaults, the app is prefilled from the latest return shared during development:
 
-Use renter-side California income tax and other deductible state/local taxes in **Other annual state/local taxes**. Do not include the prospective property's tax there because the model adds it separately. Use the manual annual tax-benefit field only when tax software or a tax professional provides a better federal or California-specific estimate.
+- Federal SALT baseline: **$41,094**
+- Other federal itemized deductions: **$0** as a 2026 planning default; the 2025 $785 charitable gift is below the new federal 0.5%-of-AGI floor at the current income level
+- California AGI: **$482,372**
+- Other California itemized deductions: **$1,676** ($891 personal-property tax + $785 charity)
+- Federal marginal rate: **32%**
+- California marginal rate: **9.3%**
 
-The same entered tax rules are reused in every simulated year, so revisit them for long holding periods.
+These are editable. California's latest published 2025 standard deduction and itemized-deduction limitation threshold are used as planning defaults and should be updated for later tax years. The model warns if entered California AGI is above the limitation threshold; it does not try to reproduce the full high-income limitation worksheet.
 
-## Calculation methodology
+The tax benefit is credited to the buyer portfolio at year-end and therefore affects buyer net worth, cumulative unrecoverable costs, net housing cost, and the economic ownership premium. It does **not** reduce the gross mortgage payment or gross housing cash outflow.
 
-The model simulates every month:
-
-1. Grow income, non-housing expenses, rent, property tax, insurance, maintenance, HOA, and ADU income using their separate annual growth assumptions.
-2. Calculate mortgage interest and principal from the remaining balance.
-3. Add each scenario's monthly surplus or deficit to its investment portfolio.
-4. Compound positive portfolio balances monthly at the entered after-tax return.
-5. Compound the home value monthly.
-6. At year end, estimate any incremental homeowner tax benefit.
-7. Calculate buyer net worth as:
-
-```text
-Investment portfolio
-+ home value
-- remaining mortgage
-- selling costs
-- estimated capital-gains tax
-```
-
-Renter net worth is the renter's investment portfolio.
-
-## Important limitations
-
-This is a planning tool, not financial, tax, legal, lending, appraisal, or insurance advice.
-
-The model does not currently include:
-
-- Refinancing
-- Adjustable-rate mortgages
-- Opportunity cost of time spent maintaining a home
-- State-specific income-tax deduction rules
-- Depreciation or tax treatment for a rented ADU
-- Detailed capital-improvement basis tracking
-- Brokerage-account tax-lot realization
-- Different borrowing rates when a portfolio becomes negative
-- Uncertain or stochastic returns
-
-Use conservative, base, and optimistic inputs and verify property-specific costs before making a decision.
+Use the manual annual homeowner-tax-benefit field only for a separate incremental amount not already counted by the selected tax model.

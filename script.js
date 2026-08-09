@@ -10,6 +10,8 @@
     const resultsSection = document.getElementById('results');
     const taxToggle = document.getElementById('estimateTaxBenefit');
     const taxInputs = document.getElementById('taxInputs');
+    const taxModeInput = document.getElementById('taxMode');
+    const californiaTaxInputs = document.getElementById('californiaTaxInputs');
     const restoreDefaultsButton = document.getElementById('restoreDefaultsButton');
     const downPaymentInput = document.getElementById('downPaymentPercent');
     const monthlyPmiInput = document.getElementById('monthlyPmi');
@@ -38,7 +40,8 @@
         'annualHomeAppreciation',
         'sellingCostsPercent',
         'capitalGainsTaxRate',
-        'federalMarginalTaxRate'
+        'federalMarginalTaxRate',
+        'californiaMarginalTaxRate'
     ]);
 
     const defaults = Object.fromEntries(
@@ -67,6 +70,11 @@
                 return;
             }
 
+            if (element.tagName === 'SELECT') {
+                values[element.id] = element.value;
+                return;
+            }
+
             const rawValue = readNumber(element.id);
             values[element.id] = percentIds.has(element.id)
                 ? rawValue / 100
@@ -89,12 +97,18 @@
         });
 
         toggleTaxInputs();
+        toggleCaliforniaTaxInputs();
         updatePmiControls();
         calculateAndRender();
     }
 
     function toggleTaxInputs() {
         taxInputs.hidden = !taxToggle.checked;
+    }
+
+    function toggleCaliforniaTaxInputs() {
+        if (!californiaTaxInputs || !taxModeInput) return;
+        californiaTaxInputs.hidden = taxModeInput.value !== 'california';
     }
 
     function updatePmiControls() {
@@ -369,9 +383,14 @@
         } else if (!breakdown.estimatorEnabled) {
             summary.textContent =
                 `Automatic estimation is off. Only the manual benefit of ${formatCurrency(breakdown.manualBenefit)} per year is included.`;
+        } else if (breakdown.californiaEnabled) {
+            summary.textContent =
+                `California mode estimates ${formatCurrency(breakdown.estimatedFederalBenefit)} of federal savings + ` +
+                `${formatCurrency(breakdown.estimatedCaliforniaBenefit)} of California savings in year one, ` +
+                `for ${formatCurrency(breakdown.totalBenefit)} total (${formatCurrency(breakdown.totalBenefit / 12)} per month).`;
         } else {
             summary.textContent =
-                `Year one estimates ${formatCurrency(breakdown.totalBenefit)} per year ` +
+                `Generic federal mode estimates ${formatCurrency(breakdown.totalBenefit)} per year ` +
                 `(${formatCurrency(breakdown.totalBenefit / 12)} per month) of incremental homeowner tax savings.`;
         }
 
@@ -379,29 +398,55 @@
             itemized > standard ? 'Itemized deduction' : 'Standard deduction';
 
         const rows = [
+            ['FEDERAL', '', ''],
             ['Mortgage interest paid', '—', formatCurrency(breakdown.annualMortgageInterest)],
             ['Average mortgage balance', '—', formatCurrency(breakdown.averageMortgageBalance)],
-            ['Mortgage-interest debt limit', '—', formatCurrency(breakdown.mortgageInterestDeductionLimit)],
-            ['Deductible share of mortgage interest', '—', formatPercent(breakdown.deductibleMortgageInterestShare, 1)],
-            ['Deductible mortgage interest', '$0', formatCurrency(breakdown.deductibleMortgageInterest)],
+            ['Federal mortgage-interest debt limit', '—', formatCurrency(breakdown.mortgageInterestDeductionLimit)],
+            ['Federal deductible share of mortgage interest', '—', formatPercent(breakdown.deductibleMortgageInterestShare, 1)],
+            ['Federal deductible mortgage interest', '$0', formatCurrency(breakdown.deductibleMortgageInterest)],
             ['Property tax paid', '$0', formatCurrency(breakdown.annualPropertyTax)],
             ['Other state/local taxes entered', formatCurrency(breakdown.annualOtherStateLocalTaxes), formatCurrency(breakdown.annualOtherStateLocalTaxes)],
-            ['SALT deduction after cap', formatCurrency(breakdown.renterSalt), formatCurrency(breakdown.buyerSalt)],
-            ['Other itemized deductions', formatCurrency(breakdown.annualOtherItemizedDeductions), formatCurrency(breakdown.annualOtherItemizedDeductions)],
-            ['Total itemized deductions', formatCurrency(breakdown.renterItemized), formatCurrency(breakdown.buyerItemized)],
-            ['Standard deduction', formatCurrency(breakdown.standardDeduction), formatCurrency(breakdown.standardDeduction)],
+            ['Federal SALT deduction after cap', formatCurrency(breakdown.renterSalt), formatCurrency(breakdown.buyerSalt)],
+            ['Other federal itemized deductions', formatCurrency(breakdown.annualOtherItemizedDeductions), formatCurrency(breakdown.annualOtherItemizedDeductions)],
+            ['Total federal itemized deductions', formatCurrency(breakdown.renterItemized), formatCurrency(breakdown.buyerItemized)],
+            ['Federal standard deduction', formatCurrency(breakdown.standardDeduction), formatCurrency(breakdown.standardDeduction)],
             [
-                'Deduction actually used',
+                'Federal deduction actually used',
                 `${formatCurrency(breakdown.renterDeduction)} · ${deductionSource(breakdown.renterItemized, breakdown.standardDeduction)}`,
                 `${formatCurrency(breakdown.buyerDeduction)} · ${deductionSource(breakdown.buyerItemized, breakdown.standardDeduction)}`
             ],
-            ['Incremental buyer deduction', '—', formatCurrency(breakdown.incrementalDeduction)],
+            ['Incremental federal buyer deduction', '—', formatCurrency(breakdown.incrementalDeduction)],
             ['Federal marginal tax rate', '—', formatPercent(breakdown.federalMarginalTaxRate, 1)],
-            ['Estimated federal tax savings', '—', formatCurrency(breakdown.estimatedFederalBenefit)],
+            ['Estimated federal tax savings', '—', formatCurrency(breakdown.estimatedFederalBenefit)]
+        ];
+
+        if (breakdown.californiaEnabled) {
+            rows.push(
+                ['CALIFORNIA', '', ''],
+                ['CA mortgage-interest debt limit', '—', formatCurrency(breakdown.californiaMortgageInterestDeductionLimit)],
+                ['CA deductible share of mortgage interest', '—', formatPercent(breakdown.californiaDeductibleMortgageInterestShare, 1)],
+                ['CA deductible mortgage interest', '$0', formatCurrency(breakdown.californiaDeductibleMortgageInterest)],
+                ['CA property-tax deduction', '$0', formatCurrency(breakdown.annualPropertyTax)],
+                ['Other CA itemized deductions', formatCurrency(breakdown.californiaOtherItemizedDeductions), formatCurrency(breakdown.californiaOtherItemizedDeductions)],
+                ['Total CA itemized deductions', formatCurrency(breakdown.renterCaliforniaItemized), formatCurrency(breakdown.buyerCaliforniaItemized)],
+                ['CA standard deduction', formatCurrency(breakdown.californiaStandardDeduction), formatCurrency(breakdown.californiaStandardDeduction)],
+                [
+                    'CA deduction actually used',
+                    `${formatCurrency(breakdown.renterCaliforniaDeduction)} · ${deductionSource(breakdown.renterCaliforniaItemized, breakdown.californiaStandardDeduction)}`,
+                    `${formatCurrency(breakdown.buyerCaliforniaDeduction)} · ${deductionSource(breakdown.buyerCaliforniaItemized, breakdown.californiaStandardDeduction)}`
+                ],
+                ['Incremental CA buyer deduction', '—', formatCurrency(breakdown.incrementalCaliforniaDeduction)],
+                ['CA marginal tax rate', '—', formatPercent(breakdown.californiaMarginalTaxRate, 1)],
+                ['Estimated California tax savings', '—', formatCurrency(breakdown.estimatedCaliforniaBenefit)]
+            );
+        }
+
+        rows.push(
+            ['TOTAL', '', ''],
             ['Manual additional benefit', '—', formatCurrency(breakdown.manualBenefit)],
             ['Total annual tax benefit used by model', '—', formatCurrency(breakdown.totalBenefit)],
             ['Monthly equivalent shown in dashboard', '—', formatCurrency(breakdown.totalBenefit / 12)]
-        ];
+        );
 
         const table = createTable(
             ['Year-one tax step', 'Rent', 'Buy / calculation'],
@@ -410,13 +455,18 @@
         );
 
         const emphasisLabels = new Set([
-            'Deduction actually used',
-            'Incremental buyer deduction',
+            'Federal deduction actually used',
+            'Incremental federal buyer deduction',
+            'CA deduction actually used',
+            'Incremental CA buyer deduction',
             'Total annual tax benefit used by model',
             'Monthly equivalent shown in dashboard'
         ]);
         Array.from(table.tBodies[0].rows).forEach((row) => {
-            if (emphasisLabels.has(row.cells[0].textContent)) {
+            const label = row.cells[0].textContent;
+            if (['FEDERAL', 'CALIFORNIA', 'TOTAL'].includes(label)) {
+                row.classList.add('section-row');
+            } else if (emphasisLabels.has(label)) {
                 row.classList.add('total-row');
             }
         });
@@ -805,6 +855,7 @@
     });
 
     taxToggle.addEventListener('change', toggleTaxInputs);
+    taxModeInput?.addEventListener('change', toggleCaliforniaTaxInputs);
     downPaymentInput.addEventListener('input', updatePmiControls);
     monthlyPmiInput.addEventListener('input', updatePmiControls);
     restoreDefaultsButton.addEventListener('click', restoreDefaults);
@@ -815,6 +866,7 @@
     });
 
     toggleTaxInputs();
+    toggleCaliforniaTaxInputs();
     updatePmiControls();
     calculateAndRender();
 })();

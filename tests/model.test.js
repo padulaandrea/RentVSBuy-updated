@@ -175,6 +175,73 @@ function closeTo(actual, expected, tolerance, message) {
     );
 })();
 
+
+(function testCaliforniaTaxModeAddsStateBenefit() {
+    const baseInputs = {
+        simulationYears: 1,
+        holdingPeriodYears: 1,
+        netMonthlyPay: 0,
+        monthlyNonHousingExpenses: 0,
+        annualAfterTaxBonus: 0,
+        liquidInvestableSavings: 3_000_000,
+        afterTaxInvestmentReturn: 0,
+        monthlyRent: 0,
+        renterInsuranceMonthly: 0,
+        homePrice: 1_880_000,
+        downPaymentPercent: 0.40,
+        mortgageInterestRate: 0.06,
+        mortgageTermYears: 30,
+        buyingClosingCostsPercent: 0,
+        propertyTaxRate: 0.0125,
+        annualPropertyTaxGrowth: 0,
+        annualHomeInsurance: 0,
+        annualMaintenance: 0,
+        annualHomeAppreciation: 0,
+        sellingCostsPercent: 0,
+        estimateTaxBenefit: true,
+        federalMarginalTaxRate: 0.32,
+        standardDeduction: 32_200,
+        mortgageInterestDeductionLimit: 750_000,
+        saltCap: 40_400,
+        annualOtherStateLocalTaxes: 41_094,
+        annualOtherItemizedDeductions: 785,
+        californiaMarginalTaxRate: 0.093,
+        californiaStandardDeduction: 11_412,
+        californiaMortgageInterestDeductionLimit: 1_000_000,
+        californiaOtherItemizedDeductions: 1_676,
+        californiaAgi: 482_372,
+        californiaItemizedDeductionLimitThreshold: 504_411
+    };
+
+    const generic = Model.simulate({ ...baseInputs, taxMode: 'generic' });
+    const california = Model.simulate({ ...baseInputs, taxMode: 'california' });
+    const breakdown = california.yearOne.buyer.taxBenefitBreakdown;
+
+    closeTo(breakdown.deductibleMortgageInterest, 45_000, 1, 'federal deductible mortgage interest');
+    closeTo(breakdown.californiaDeductibleMortgageInterest, 60_000, 1, 'California deductible mortgage interest');
+    closeTo(breakdown.estimatedFederalBenefit, 14_400, 1, 'federal tax savings');
+    closeTo(breakdown.estimatedCaliforniaBenefit, 6_860.052, 1, 'California tax savings');
+    closeTo(
+        california.yearOne.buyer.annualTaxBenefit - generic.yearOne.buyer.annualTaxBenefit,
+        breakdown.estimatedCaliforniaBenefit,
+        0.01,
+        'California mode adds only the state benefit above generic mode'
+    );
+})();
+
+(function testCaliforniaHighIncomeWarning() {
+    const result = Model.simulate({
+        simulationYears: 1,
+        holdingPeriodYears: 1,
+        estimateTaxBenefit: true,
+        taxMode: 'california',
+        californiaAgi: 600_000,
+        californiaItemizedDeductionLimitThreshold: 504_411
+    });
+    const warnings = Model.buildWarnings(result);
+    assert.ok(warnings.some((warning) => warning.includes('California AGI is above')));
+})();
+
 (function testSensitivityMatrix() {
     const matrix = Model.buildSensitivityMatrix({
         simulationYears: 5,

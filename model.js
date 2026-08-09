@@ -80,12 +80,21 @@
             capitalGainsTaxRate: Math.max(0, finiteNumber(raw.capitalGainsTaxRate, 0)),
 
             estimateTaxBenefit: Boolean(raw.estimateTaxBenefit),
+            taxMode: raw.taxMode === 'california' ? 'california' : 'generic',
             federalMarginalTaxRate: Math.max(0, finiteNumber(raw.federalMarginalTaxRate, 0.32)),
             standardDeduction: Math.max(0, finiteNumber(raw.standardDeduction, 32200)),
             mortgageInterestDeductionLimit: Math.max(0, finiteNumber(raw.mortgageInterestDeductionLimit, 750000)),
             saltCap: Math.max(0, finiteNumber(raw.saltCap, 40400)),
-            annualOtherStateLocalTaxes: Math.max(0, finiteNumber(raw.annualOtherStateLocalTaxes, 0)),
+            annualOtherStateLocalTaxes: Math.max(0, finiteNumber(raw.annualOtherStateLocalTaxes, 41094)),
             annualOtherItemizedDeductions: Math.max(0, finiteNumber(raw.annualOtherItemizedDeductions, 0)),
+
+            californiaMarginalTaxRate: Math.max(0, finiteNumber(raw.californiaMarginalTaxRate, 0.093)),
+            californiaStandardDeduction: Math.max(0, finiteNumber(raw.californiaStandardDeduction, 11412)),
+            californiaMortgageInterestDeductionLimit: Math.max(0, finiteNumber(raw.californiaMortgageInterestDeductionLimit, 1000000)),
+            californiaOtherItemizedDeductions: Math.max(0, finiteNumber(raw.californiaOtherItemizedDeductions, 1676)),
+            californiaAgi: Math.max(0, finiteNumber(raw.californiaAgi, 482372)),
+            californiaItemizedDeductionLimitThreshold: Math.max(0, finiteNumber(raw.californiaItemizedDeductionLimitThreshold, 504411)),
+
             additionalAnnualHomeownerTaxBenefit: finiteNumber(raw.additionalAnnualHomeownerTaxBenefit, 0)
         };
 
@@ -104,12 +113,12 @@
         const balanceForLimit = Number.isFinite(averageMortgageBalance)
             ? Math.max(0, averageMortgageBalance)
             : originalLoan;
-        const deductibleShare = balanceForLimit > 0
+
+        const federalDeductibleShare = balanceForLimit > 0
             ? Math.min(1, inputs.mortgageInterestDeductionLimit / balanceForLimit)
             : 0;
-
-        const deductibleMortgageInterest = inputs.estimateTaxBenefit
-            ? Math.max(0, annualMortgageInterest * deductibleShare)
+        const federalDeductibleMortgageInterest = inputs.estimateTaxBenefit
+            ? Math.max(0, annualMortgageInterest * federalDeductibleShare)
             : 0;
         const renterSalt = inputs.estimateTaxBenefit
             ? Math.min(inputs.saltCap, inputs.annualOtherStateLocalTaxes)
@@ -121,49 +130,100 @@
               )
             : 0;
 
-        const renterItemized = inputs.estimateTaxBenefit
+        const renterFederalItemized = inputs.estimateTaxBenefit
             ? renterSalt + inputs.annualOtherItemizedDeductions
             : 0;
-        const buyerItemized = inputs.estimateTaxBenefit
+        const buyerFederalItemized = inputs.estimateTaxBenefit
             ? buyerSalt +
               inputs.annualOtherItemizedDeductions +
-              deductibleMortgageInterest
+              federalDeductibleMortgageInterest
             : 0;
-
-        const renterDeduction = inputs.estimateTaxBenefit
-            ? Math.max(inputs.standardDeduction, renterItemized)
+        const renterFederalDeduction = inputs.estimateTaxBenefit
+            ? Math.max(inputs.standardDeduction, renterFederalItemized)
             : 0;
-        const buyerDeduction = inputs.estimateTaxBenefit
-            ? Math.max(inputs.standardDeduction, buyerItemized)
+        const buyerFederalDeduction = inputs.estimateTaxBenefit
+            ? Math.max(inputs.standardDeduction, buyerFederalItemized)
             : 0;
-        const incrementalDeduction = inputs.estimateTaxBenefit
-            ? Math.max(0, buyerDeduction - renterDeduction)
+        const incrementalFederalDeduction = inputs.estimateTaxBenefit
+            ? Math.max(0, buyerFederalDeduction - renterFederalDeduction)
             : 0;
         const estimatedFederalBenefit =
-            incrementalDeduction * inputs.federalMarginalTaxRate;
-        const totalBenefit = estimatedFederalBenefit + manualBenefit;
+            incrementalFederalDeduction * inputs.federalMarginalTaxRate;
+
+        const californiaEnabled = inputs.estimateTaxBenefit && inputs.taxMode === 'california';
+        const californiaDeductibleShare = balanceForLimit > 0
+            ? Math.min(1, inputs.californiaMortgageInterestDeductionLimit / balanceForLimit)
+            : 0;
+        const californiaDeductibleMortgageInterest = californiaEnabled
+            ? Math.max(0, annualMortgageInterest * californiaDeductibleShare)
+            : 0;
+        const renterCaliforniaItemized = californiaEnabled
+            ? inputs.californiaOtherItemizedDeductions
+            : 0;
+        const buyerCaliforniaItemized = californiaEnabled
+            ? inputs.californiaOtherItemizedDeductions +
+              Math.max(0, annualPropertyTax) +
+              californiaDeductibleMortgageInterest
+            : 0;
+        const renterCaliforniaDeduction = californiaEnabled
+            ? Math.max(inputs.californiaStandardDeduction, renterCaliforniaItemized)
+            : 0;
+        const buyerCaliforniaDeduction = californiaEnabled
+            ? Math.max(inputs.californiaStandardDeduction, buyerCaliforniaItemized)
+            : 0;
+        const incrementalCaliforniaDeduction = californiaEnabled
+            ? Math.max(0, buyerCaliforniaDeduction - renterCaliforniaDeduction)
+            : 0;
+        const estimatedCaliforniaBenefit =
+            incrementalCaliforniaDeduction * inputs.californiaMarginalTaxRate;
+
+        const totalBenefit =
+            estimatedFederalBenefit + estimatedCaliforniaBenefit + manualBenefit;
 
         return {
             estimatorEnabled: inputs.estimateTaxBenefit,
+            taxMode: inputs.taxMode,
+            californiaEnabled,
             annualMortgageInterest: Math.max(0, annualMortgageInterest),
             averageMortgageBalance: balanceForLimit,
-            mortgageInterestDeductionLimit: inputs.mortgageInterestDeductionLimit,
-            deductibleMortgageInterestShare: deductibleShare,
-            deductibleMortgageInterest,
             annualPropertyTax: Math.max(0, annualPropertyTax),
+
+            mortgageInterestDeductionLimit: inputs.mortgageInterestDeductionLimit,
+            deductibleMortgageInterestShare: federalDeductibleShare,
+            deductibleMortgageInterest: federalDeductibleMortgageInterest,
             annualOtherStateLocalTaxes: inputs.annualOtherStateLocalTaxes,
             saltCap: inputs.saltCap,
             renterSalt,
             buyerSalt,
             annualOtherItemizedDeductions: inputs.annualOtherItemizedDeductions,
-            renterItemized,
-            buyerItemized,
+            renterItemized: renterFederalItemized,
+            buyerItemized: buyerFederalItemized,
             standardDeduction: inputs.standardDeduction,
-            renterDeduction,
-            buyerDeduction,
-            incrementalDeduction,
+            renterDeduction: renterFederalDeduction,
+            buyerDeduction: buyerFederalDeduction,
+            incrementalDeduction: incrementalFederalDeduction,
             federalMarginalTaxRate: inputs.federalMarginalTaxRate,
             estimatedFederalBenefit,
+
+            californiaMarginalTaxRate: inputs.californiaMarginalTaxRate,
+            californiaStandardDeduction: inputs.californiaStandardDeduction,
+            californiaMortgageInterestDeductionLimit: inputs.californiaMortgageInterestDeductionLimit,
+            californiaDeductibleMortgageInterestShare: californiaDeductibleShare,
+            californiaDeductibleMortgageInterest,
+            californiaOtherItemizedDeductions: inputs.californiaOtherItemizedDeductions,
+            renterCaliforniaItemized,
+            buyerCaliforniaItemized,
+            renterCaliforniaDeduction,
+            buyerCaliforniaDeduction,
+            incrementalCaliforniaDeduction,
+            estimatedCaliforniaBenefit,
+            californiaAgi: inputs.californiaAgi,
+            californiaItemizedDeductionLimitThreshold: inputs.californiaItemizedDeductionLimitThreshold,
+            californiaHighIncomeLimitationMayApply:
+                californiaEnabled &&
+                inputs.californiaItemizedDeductionLimitThreshold > 0 &&
+                inputs.californiaAgi > inputs.californiaItemizedDeductionLimitThreshold,
+
             manualBenefit,
             totalBenefit
         };
@@ -682,13 +742,24 @@
 
         if (inputs.estimateTaxBenefit && inputs.annualOtherStateLocalTaxes === 0) {
             warnings.push(
-                'The tax estimator assumes no renter-side state or local taxes. In a state with income tax, this can overstate the incremental property-tax benefit.'
+                'The federal tax estimator assumes no renter-side state or local taxes. In a state with income tax, this can overstate the incremental federal property-tax benefit.'
+            );
+        }
+
+        if (
+            inputs.estimateTaxBenefit &&
+            inputs.taxMode === 'california' &&
+            inputs.californiaItemizedDeductionLimitThreshold > 0 &&
+            inputs.californiaAgi > inputs.californiaItemizedDeductionLimitThreshold
+        ) {
+            warnings.push(
+                'California AGI is above the entered itemized-deduction limitation threshold. The simplified California estimator does not model the high-income limitation; verify the state benefit with tax software.'
             );
         }
 
         if (inputs.estimateTaxBenefit && inputs.simulationYears > 4) {
             warnings.push(
-                'The same tax assumptions are reused in every simulated year. Revisit the standard deduction, SALT cap, and tax rate for long holding periods.'
+                'The same tax assumptions are reused in every simulated year. Revisit federal and state deduction limits, standard deductions, and marginal rates for long holding periods.'
             );
         }
 

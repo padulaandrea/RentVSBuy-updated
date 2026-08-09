@@ -69,3 +69,15 @@ The results now include a year-one tax calculation bridge showing mortgage inter
 The mortgage-interest limit now uses the year's average mortgage balance rather than the original loan balance for every year. The tax benefit continues to be credited to the buyer portfolio annually and is reflected in buyer net worth, cumulative unrecoverable costs, net housing cost, and the economic ownership premium. Gross housing cash outflow remains unchanged.
 
 The input guidance now clarifies 2026 married-filing-jointly defaults, renter-side state/local taxes, the SALT income phase-down caveat, and the role of the manual benefit field.
+
+
+## California tax mode
+
+The tax estimator now has two modes:
+
+- **Generic — federal only** preserves the prior federal itemized-deduction comparison.
+- **California — federal + California** adds a separate California calculation rather than relying on the manual benefit field.
+
+California mode models a separate marginal rate, standard deduction, $1,000,000 mortgage-interest acquisition-debt limit, property-tax deduction, and renter-side California itemized-deduction baseline. It also accepts California AGI and a limitation threshold so the app can warn when the simplified state estimate may overstate the benefit.
+
+The default California profile is prefilled from the user's latest return values shared during development: $41,094 federal SALT baseline, $785 other federal itemized deductions, $482,372 California AGI, and $1,676 of California-side baseline itemized deductions. All values remain editable.
