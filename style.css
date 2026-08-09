@@ -1,0 +1,611 @@
+:root {
+    color-scheme: light;
+    --background: #f5f7fb;
+    --surface: #ffffff;
+    --surface-muted: #eef2f7;
+    --text: #18212f;
+    --muted: #5f6b7a;
+    --border: #d8e0ea;
+    --accent: #2463eb;
+    --accent-dark: #1748b8;
+    --success: #157347;
+    --danger: #b42318;
+    --warning-bg: #fff7e6;
+    --warning-border: #f0c36d;
+    --shadow: 0 12px 30px rgba(24, 33, 47, 0.08);
+    --radius: 16px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--background);
+    color: var(--text);
+    font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    line-height: 1.5;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
+    gap: 28px;
+    align-items: end;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 64px 24px 28px;
+}
+
+.eyebrow {
+    margin: 0 0 8px;
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin-top: 0;
+}
+
+h1 {
+    margin-bottom: 14px;
+    font-size: clamp(2.25rem, 5vw, 4.6rem);
+    letter-spacing: -0.05em;
+    line-height: 0.98;
+}
+
+h2 {
+    margin-bottom: 8px;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    letter-spacing: -0.035em;
+}
+
+h3 {
+    margin-bottom: 14px;
+    font-size: 1.2rem;
+}
+
+.hero-copy,
+.decision-summary,
+.panel-heading p,
+small,
+footer,
+.methodology li {
+    color: var(--muted);
+}
+
+.hero-copy {
+    max-width: 700px;
+    margin-bottom: 0;
+    font-size: 1.1rem;
+}
+
+.hero-note {
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px 56px;
+}
+
+form {
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 4px);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+legend {
+    padding: 0 8px;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.optional-label {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+label {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 16px;
+    font-weight: 650;
+}
+
+label:last-child {
+    margin-bottom: 0;
+}
+
+small {
+    font-size: 0.78rem;
+    font-weight: 450;
+}
+
+.input-with-unit {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+}
+
+.input-with-unit:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(36, 99, 235, 0.12);
+}
+
+.field-help {
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.input-with-unit:has(input:disabled) {
+    opacity: 0.65;
+    background: var(--surface-muted);
+}
+
+input:disabled {
+    cursor: not-allowed;
+}
+
+.input-with-unit > span {
+    padding: 10px 12px;
+    color: var(--muted);
+    background: var(--surface-muted);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+input[type="number"] {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 0;
+    outline: none;
+    color: var(--text);
+    background: transparent;
+}
+
+.checkbox-label {
+    display: flex;
+    grid-template-columns: none;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.checkbox-label input {
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    accent-color: var(--accent);
+}
+
+.nested-inputs {
+    margin: 0 0 18px;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--surface-muted);
+}
+
+.inline-warning {
+    margin-bottom: 16px;
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 22px;
+}
+
+button {
+    padding: 11px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.primary-button {
+    border: 1px solid var(--accent);
+    color: #fff;
+    background: var(--accent);
+}
+
+.primary-button:hover {
+    border-color: var(--accent-dark);
+    background: var(--accent-dark);
+}
+
+.secondary-button {
+    border: 1px solid var(--border);
+    color: var(--text);
+    background: var(--surface);
+}
+
+.results {
+    display: none;
+    margin-top: 38px;
+}
+
+.results.visible {
+    display: block;
+}
+
+.section-heading,
+.panel-heading {
+    display: flex;
+    gap: 24px;
+    align-items: end;
+    justify-content: space-between;
+}
+
+.section-heading {
+    margin-bottom: 18px;
+}
+
+.decision-summary {
+    max-width: 430px;
+    margin-bottom: 7px;
+    text-align: right;
+}
+
+.warning-box {
+    margin-bottom: 18px;
+    padding: 18px 20px;
+    border: 1px solid var(--warning-border);
+    border-radius: var(--radius);
+    background: var(--warning-bg);
+}
+
+.warning-box ul {
+    margin: 10px 0 0;
+    padding-left: 20px;
+}
+
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.summary-card,
+.panel {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.summary-card {
+    padding: 18px;
+}
+
+.summary-card.emphasis {
+    border-color: rgba(36, 99, 235, 0.45);
+    background: linear-gradient(180deg, rgba(36, 99, 235, 0.08), #fff);
+}
+
+.card-label,
+.card-detail {
+    margin-bottom: 0;
+}
+
+.card-label {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.card-value {
+    display: block;
+    margin: 8px 0;
+    font-size: clamp(1.45rem, 3vw, 2.2rem);
+    letter-spacing: -0.035em;
+}
+
+.card-detail {
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.two-column {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.panel {
+    margin-bottom: 18px;
+    padding: 22px;
+}
+
+.two-column .panel {
+    margin-bottom: 0;
+}
+
+.chart-wrap {
+    height: 390px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+caption {
+    padding-bottom: 12px;
+    color: var(--muted);
+    text-align: left;
+    font-weight: 650;
+}
+
+th,
+td {
+    padding: 11px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    color: var(--muted);
+    background: var(--surface-muted);
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+td.numeric,
+th:not(:first-child) {
+    text-align: right;
+}
+
+tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.sensitivity-table {
+    min-width: 720px;
+}
+
+.positive {
+    color: var(--success);
+    font-weight: 800;
+}
+
+.negative {
+    color: var(--danger);
+    font-weight: 800;
+}
+
+.metric-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 24px;
+    margin: 0;
+}
+
+.metric-list dt {
+    color: var(--muted);
+}
+
+.metric-list dd {
+    margin: 0;
+    text-align: right;
+    font-weight: 750;
+}
+
+.checklist,
+.methodology ul {
+    margin: 0;
+    padding-left: 21px;
+}
+
+.checklist li,
+.methodology li {
+    margin-bottom: 9px;
+}
+
+.checklist li:last-child,
+.methodology li:last-child {
+    margin-bottom: 0;
+}
+
+.methodology {
+    background: linear-gradient(180deg, #fff, #f9fbff);
+}
+
+footer {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px 42px;
+    font-size: 0.82rem;
+}
+
+footer p {
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .hero,
+    .input-grid,
+    .summary-cards,
+    .two-column {
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+        align-items: stretch;
+        padding-top: 38px;
+    }
+
+    .section-heading,
+    .panel-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .decision-summary {
+        text-align: left;
+    }
+
+    .summary-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    main,
+    .hero,
+    footer {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    form {
+        padding: 14px;
+    }
+
+    fieldset,
+    .panel {
+        padding: 16px;
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .chart-wrap {
+        height: 320px;
+    }
+
+    .metric-list {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+
+    .metric-list dd {
+        margin-bottom: 12px;
+        text-align: left;
+    }
+}
+
+.expense-overview-table .total-row td {
+    font-weight: 700;
+    border-top: 2px solid var(--border);
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.expense-overview-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.monthly-expense-panel .table-scroll {
+    margin-top: 8px;
+}
+
+.expense-overview-table .subtotal-row td {
+    font-weight: 650;
+    border-top: 1px dashed var(--border);
+}
+
+.tax-formula {
+    display: grid;
+    gap: 4px;
+    margin: 10px 0 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-muted);
+}
+
+.tax-formula span {
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.tax-estimate-panel .table-scroll {
+    margin-top: 8px;
+}
+
+.tax-estimate-table {
+    min-width: 760px;
+}
+
+.tax-estimate-table .total-row td {
+    font-weight: 700;
+    border-top: 2px solid var(--border);
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.tax-estimate-notes {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-left: 4px solid var(--accent);
+    background: var(--surface-muted);
+    border-radius: 0 12px 12px 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.tax-estimate-notes p {
+    margin: 0;
+}

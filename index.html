@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="description"
+        content="A transparent rent-versus-buy calculator that compares cash flow, net worth, taxes, transaction costs, and scenario sensitivity."
+    >
+    <title>Rent vs. Buy Decision Model</title>
+    <link rel="stylesheet" href="style.css">
+    <script id="chartJsScript" async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <header class="hero">
+        <div>
+            <p class="eyebrow">Decision model</p>
+            <h1>Rent vs. Buy Calculator</h1>
+            <p class="hero-copy">
+                Compare affordability and long-term net worth separately. Every major assumption is visible and adjustable.
+            </p>
+        </div>
+        <div class="hero-note">
+            <strong>Important:</strong>
+            Enter <em>non-housing</em> monthly expenses only. For example, if total spending is
+            $8,000 including $5,500 rent, enter $2,500.
+        </div>
+    </header>
+
+    <main>
+        <form id="calculatorForm" novalidate>
+            <section class="input-grid">
+                <fieldset>
+                    <legend>Financial foundation</legend>
+
+                    <label>
+                        <span>Net monthly pay</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="netMonthlyPay" type="number" min="0" step="100" value="13000">
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Monthly non-housing expenses</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="monthlyNonHousingExpenses" type="number" min="0" step="100" value="2500">
+                        </span>
+                        <small>Exclude rent, mortgage, property tax, insurance, HOA, and maintenance.</small>
+                    </label>
+
+                    <label>
+                        <span>After-tax stock/bonus per year</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="annualAfterTaxBonus" type="number" step="1000" value="30000">
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Liquid and investable savings</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="liquidInvestableSavings" type="number" step="10000" value="1400000">
+                        </span>
+                        <small>Exclude retirement assets or money that cannot be used for the purchase.</small>
+                    </label>
+
+                    <label>
+                        <span>After-tax investment return</span>
+                        <span class="input-with-unit">
+                            <input id="afterTaxInvestmentReturn" type="number" step="0.1" value="6">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Annual income growth</span>
+                        <span class="input-with-unit">
+                            <input id="annualIncomeGrowth" type="number" step="0.1" value="3">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Annual non-housing expense inflation</span>
+                        <span class="input-with-unit">
+                            <input id="annualExpenseInflation" type="number" step="0.1" value="3">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Emergency-fund target</span>
+                        <span class="input-with-unit">
+                            <input id="emergencyFundMonths" type="number" min="0" step="1" value="6">
+                            <span>months</span>
+                        </span>
+                    </label>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Rent scenario</legend>
+
+                    <label>
+                        <span>Monthly rent for a comparable home</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="monthlyRent" type="number" min="0" step="100" value="5500">
+                        </span>
+                        <small>Compare similar space, school access, commute, yard, and quality.</small>
+                    </label>
+
+                    <label>
+                        <span>Annual rent increase</span>
+                        <span class="input-with-unit">
+                            <input id="annualRentIncrease" type="number" step="0.1" value="3">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Monthly renter insurance</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="renterInsuranceMonthly" type="number" min="0" step="5" value="25">
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>One-time moving/setup costs</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="renterMovingCosts" type="number" min="0" step="500" value="0">
+                        </span>
+                    </label>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Purchase and financing</legend>
+
+                    <label>
+                        <span>Home price</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="homePrice" type="number" min="0" step="10000" value="1500000">
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Down payment</span>
+                        <span class="input-with-unit">
+                            <input id="downPaymentPercent" type="number" min="0" max="100" step="0.1" value="23">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Mortgage interest rate</span>
+                        <span class="input-with-unit">
+                            <input id="mortgageInterestRate" type="number" step="0.01" value="6">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Mortgage term</span>
+                        <span class="input-with-unit">
+                            <input id="mortgageTermYears" type="number" min="1" max="50" step="1" value="30">
+                            <span>years</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Buying closing costs</span>
+                        <span class="input-with-unit">
+                            <input id="buyingClosingCostsPercent" type="number" min="0" step="0.1" value="2">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Immediate repairs or renovations</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="upfrontRepairs" type="number" min="0" step="1000" value="0">
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>First-year supplemental property tax</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="supplementalPropertyTaxYearOne" type="number" min="0" step="500" value="0">
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Monthly PMI</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="monthlyPmi" type="number" min="0" step="25" value="0">
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>PMI removal LTV <span class="optional-label">Advanced</span></span>
+                        <span class="input-with-unit">
+                            <input id="pmiRemovalLtv" type="number" min="0" max="100" step="1" value="80">
+                            <span>%</span>
+                        </span>
+                        <small id="pmiRemovalLtvHelp" class="field-help">
+                            Usually 80%. This field matters only when the down payment is below 20%.
+                        </small>
+                    </label>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Ongoing ownership costs</legend>
+
+                    <label>
+                        <span>Initial property-tax rate</span>
+                        <span class="input-with-unit">
+                            <input id="propertyTaxRate" type="number" min="0" step="0.01" value="1.3">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Annual property-tax growth</span>
+                        <span class="input-with-unit">
+                            <input id="annualPropertyTaxGrowth" type="number" step="0.1" value="2">
+                            <span>%</span>
+                        </span>
+                        <small>Use assessed-value growth, not market appreciation.</small>
+                    </label>
+
+                    <label>
+                        <span>Annual homeowners insurance</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="annualHomeInsurance" type="number" min="0" step="250" value="3750">
+                        </span>
+                        <small>Use an address-specific quote, especially in wildfire-risk areas.</small>
+                    </label>
+
+                    <label>
+                        <span>Annual insurance growth</span>
+                        <span class="input-with-unit">
+                            <input id="annualInsuranceGrowth" type="number" step="0.1" value="5">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Annual maintenance and capital reserve</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="annualMaintenance" type="number" min="0" step="500" value="12000">
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Annual maintenance growth</span>
+                        <span class="input-with-unit">
+                            <input id="annualMaintenanceGrowth" type="number" step="0.1" value="3">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Monthly HOA</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="monthlyHoa" type="number" min="0" step="25" value="0">
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Annual HOA growth</span>
+                        <span class="input-with-unit">
+                            <input id="annualHoaGrowth" type="number" step="0.1" value="3">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Net monthly ADU income</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="monthlyNetAduIncome" type="number" step="50" value="0">
+                        </span>
+                        <small>Enter income after vacancy, utilities, maintenance, and taxes.</small>
+                    </label>
+
+                    <label>
+                        <span>Annual ADU-income growth</span>
+                        <span class="input-with-unit">
+                            <input id="annualAduIncomeGrowth" type="number" step="0.1" value="3">
+                            <span>%</span>
+                        </span>
+                    </label>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Market, exit, and decision horizon</legend>
+
+                    <label>
+                        <span>Annual home appreciation</span>
+                        <span class="input-with-unit">
+                            <input id="annualHomeAppreciation" type="number" step="0.1" value="2">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Total selling costs</span>
+                        <span class="input-with-unit">
+                            <input id="sellingCostsPercent" type="number" min="0" step="0.1" value="6">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Primary-residence gain exclusion</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="capitalGainsExclusion" type="number" min="0" step="10000" value="500000">
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Tax rate on taxable home gain</span>
+                        <span class="input-with-unit">
+                            <input id="capitalGainsTaxRate" type="number" min="0" step="0.1" value="0">
+                            <span>%</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Holding period for decision</span>
+                        <span class="input-with-unit">
+                            <input id="holdingPeriodYears" type="number" min="1" max="30" step="1" value="10">
+                            <span>years</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Maximum chart horizon</span>
+                        <span class="input-with-unit">
+                            <input id="simulationYears" type="number" min="1" max="50" step="1" value="30">
+                            <span>years</span>
+                        </span>
+                    </label>
+
+                    <label>
+                        <span>Maximum ownership premium worth paying</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="maxOwnershipPremiumMonthly" type="number" min="0" step="100" value="0">
+                        </span>
+                        <small>Optional lifestyle value for stability, control, space, and permanence.</small>
+                    </label>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Tax estimate <span class="optional-label">optional</span></legend>
+
+                    <label class="checkbox-label">
+                        <input id="estimateTaxBenefit" type="checkbox">
+                        <span>Estimate incremental federal homeowner tax benefit</span>
+                    </label>
+
+                    <div id="taxInputs" class="nested-inputs" hidden>
+                        <p class="inline-warning">
+                            This is a simplified federal estimator, not tax advice. A deduction does not reimburse
+                            mortgage interest. It reduces taxable income, and only the buyer's deduction above the
+                            renter's deduction creates an incremental tax benefit.
+                        </p>
+
+                        <div class="tax-formula" aria-label="Tax estimate formula">
+                            <strong>Estimated benefit</strong>
+                            <span>(Buyer deduction − renter deduction) × federal marginal tax rate</span>
+                        </div>
+
+                        <label>
+                            <span>Federal marginal tax rate</span>
+                            <span class="input-with-unit">
+                                <input id="federalMarginalTaxRate" type="number" min="0" step="0.1" value="32">
+                                <span>%</span>
+                            </span>
+                            <small>Use the rate applying to the income reduced by the deduction, not your effective tax rate.</small>
+                        </label>
+
+                        <label>
+                            <span>Standard deduction</span>
+                            <span class="input-with-unit">
+                                <span>$</span>
+                                <input id="standardDeduction" type="number" min="0" step="100" value="32200">
+                            </span>
+                            <small>2026 married-filing-jointly default: $32,200.</small>
+                        </label>
+
+                        <label>
+                            <span>Mortgage-interest debt limit</span>
+                            <span class="input-with-unit">
+                                <span>$</span>
+                                <input id="mortgageInterestDeductionLimit" type="number" min="0" step="10000" value="750000">
+                            </span>
+                            <small>Usually $750,000 for qualifying acquisition debt incurred after December 15, 2017.</small>
+                        </label>
+
+                        <label>
+                            <span>Effective SALT deduction cap</span>
+                            <span class="input-with-unit">
+                                <span>$</span>
+                                <input id="saltCap" type="number" min="0" step="100" value="40400">
+                            </span>
+                            <small>2026 joint-filer maximum: $40,400. Reduce it when MAGI exceeds $505,000; the floor is $10,000.</small>
+                        </label>
+
+                        <label>
+                            <span>Other annual state/local taxes — renter baseline</span>
+                            <span class="input-with-unit">
+                                <span>$</span>
+                                <input id="annualOtherStateLocalTaxes" type="number" min="0" step="500" value="0">
+                            </span>
+                            <small>Enter California income tax and other deductible SALT already paid in either scenario. Do not add the prospective home's property tax here.</small>
+                        </label>
+
+                        <label>
+                            <span>Other annual itemized deductions — both scenarios</span>
+                            <span class="input-with-unit">
+                                <span>$</span>
+                                <input id="annualOtherItemizedDeductions" type="number" min="0" step="500" value="0">
+                            </span>
+                            <small>For example, qualifying charitable gifts or medical deductions that apply whether renting or buying.</small>
+                        </label>
+                    </div>
+
+                    <label>
+                        <span>Manual additional annual homeowner tax benefit</span>
+                        <span class="input-with-unit">
+                            <span>$</span>
+                            <input id="additionalAnnualHomeownerTaxBenefit" type="number" step="500" value="0">
+                        </span>
+                        <small>Leave at $0 unless tax software or a tax professional gives you an additional annual benefit, such as a California-specific estimate.</small>
+                    </label>
+                </fieldset>
+            </section>
+
+            <div class="form-actions">
+                <button type="submit" class="primary-button">Calculate comparison</button>
+                <button type="button" id="restoreDefaultsButton" class="secondary-button">Restore defaults</button>
+            </div>
+        </form>
+
+        <section id="results" class="results" aria-live="polite">
+            <div id="warnings"></div>
+
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Decision snapshot</p>
+                    <h2 id="decisionHeading">Results</h2>
+                </div>
+                <p id="decisionSummary" class="decision-summary"></p>
+            </div>
+
+            <div id="summaryCards" class="summary-cards"></div>
+
+            <article class="panel monthly-expense-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>Year-one monthly expense overview</h3>
+                        <p>Average monthly amounts. Mortgage principal is shown separately because it builds equity.</p>
+                    </div>
+                </div>
+                <div id="monthlyExpenseTable" class="table-scroll"></div>
+            </article>
+
+            <article class="panel tax-estimate-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>How the tax estimate works</h3>
+                        <p id="taxEstimateSummary">The estimator compares the buyer's deduction with the renter's deduction.</p>
+                    </div>
+                </div>
+                <div id="taxEstimateTable" class="table-scroll"></div>
+                <div class="tax-estimate-notes">
+                    <p><strong>Important:</strong> This is tax savings, not recovered interest. Mortgage principal, homeowners insurance, maintenance, and HOA are not included as federal homeowner deductions.</p>
+                    <p>The model credits the estimated benefit to the buyer portfolio at each year-end. It reduces net housing cost, unrecoverable cost, and the economic ownership premium, but it does not reduce gross mortgage or housing cash outflow.</p>
+                    <p>The entered tax rules are reused for every simulated year. Revisit them when tax law changes, especially for long holding periods.</p>
+                </div>
+            </article>
+
+            <div class="two-column">
+                <article class="panel">
+                    <h3>Year-one affordability</h3>
+                    <div id="affordabilityTable"></div>
+                </article>
+
+                <article class="panel">
+                    <h3>Upfront cash and ownership details</h3>
+                    <div id="upfrontTable"></div>
+                </article>
+            </div>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>Net worth over time</h3>
+                        <p>Buyer net worth assumes the home is sold in each displayed year.</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="netWorthChart"></canvas>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>Monthly housing cash outflow</h3>
+                        <p>Mortgage principal is included here because this chart measures cash flow, not economic cost.</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="housingCashFlowChart"></canvas>
+                </div>
+            </article>
+
+            <div class="two-column">
+                <article class="panel">
+                    <h3>Break-even analysis</h3>
+                    <div id="breakEvenAnalysis"></div>
+                </article>
+
+                <article class="panel">
+                    <h3>Comparable-home checklist</h3>
+                    <ul class="checklist">
+                        <li>Similar bedrooms, square footage, and outdoor space</li>
+                        <li>Similar school access and neighborhood quality</li>
+                        <li>Similar commute, parking, and transportation</li>
+                        <li>Similar condition, privacy, and amenities</li>
+                        <li>Include the value of stability and the cost of reduced flexibility</li>
+                    </ul>
+                </article>
+            </div>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>Sensitivity matrix</h3>
+                        <p>
+                            Buyer advantage at the selected holding period under conservative, base, and optimistic
+                            return combinations.
+                        </p>
+                    </div>
+                </div>
+                <div id="sensitivityTable" class="table-scroll"></div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>Detailed yearly comparison</h3>
+                        <p>All values include investment growth and scenario-specific cash flow.</p>
+                    </div>
+                </div>
+                <div id="yearlyTable" class="table-scroll"></div>
+            </article>
+
+            <article class="panel methodology">
+                <h3>How the model treats money</h3>
+                <ul>
+                    <li>Investment and home appreciation compound monthly.</li>
+                    <li>Monthly surplus or deficit is added to each scenario's investment portfolio.</li>
+                    <li>Mortgage principal builds equity; mortgage interest is unrecoverable.</li>
+                    <li>Buyer net worth subtracts the remaining mortgage, selling costs, and estimated gain tax.</li>
+                    <li>Property tax grows independently from market appreciation.</li>
+                    <li>Investment return should be entered after expected tax drag and fees.</li>
+                </ul>
+            </article>
+        </section>
+    </main>
+
+    <footer>
+        <p>
+            This calculator is for scenario planning. Confirm tax, insurance, financing, and property-specific costs
+            with qualified professionals before making a purchase decision.
+        </p>
+    </footer>
+
+    <script src="model.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

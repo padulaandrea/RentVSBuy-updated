@@ -1,0 +1,9 @@
+{
+  "name": "rent-vs-buy-decision-model",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Transparent rent-versus-buy decision model with monthly cash-flow and net-worth simulation.",
+  "scripts": {
+    "test": "node tests/model.test.js"
+  }
+}
